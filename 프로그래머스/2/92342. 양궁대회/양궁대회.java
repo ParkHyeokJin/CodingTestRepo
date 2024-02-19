@@ -9,29 +9,27 @@ class Solution {
     private int[] getWinLionScore(int n, int[] info, int[] answer) {
         Queue<State> queue = new LinkedList<>();
 
-        int apeacheTotalScore = 0;
+        int apeachTotalScore = 0;
         for(int i = 0 ; i < info.length; i++){
-            if(info[i] > 0) apeacheTotalScore += 10 - i;
+            if(info[i] > 0) apeachTotalScore += 10 - i;
         }
 
-        queue.add(new State(n, 0, apeacheTotalScore, new int[info.length], new boolean[info.length]));
+        queue.add(new State(n, 0, apeachTotalScore, new int[info.length], new boolean[info.length]));
 
         int maxDiffScore = Integer.MIN_VALUE;
         while (!queue.isEmpty()) {
             State state = queue.poll();
-            if (state.lionArrow == 0 && state.lionScore > state.apeachScore) {
-                if(state.lionScore - state.apeachScore >= maxDiffScore){
+            if (state.lionHitCnt == 0) {
+                if(state.lionScore > state.apeachScore
+                        && state.lionScore - state.apeachScore >= maxDiffScore){
                     maxDiffScore = state.lionScore - state.apeachScore;
                     for(int j = 10; j >= 0; j--){
-                        if(state.lionShots[j] > answer[j]){
-                            answer = state.lionShots;
+                        if(state.lionInfo[j] > answer[j]){
+                            answer = state.lionInfo;
                             break;
                         }
                     }
-                    continue;
                 }
-                continue;
-            }else if(state.lionArrow == 0 && state.apeachScore > state.lionScore){
                 continue;
             }
 
@@ -39,12 +37,12 @@ class Solution {
                 if (!state.visited[i]) {
                     state.visited[i] = true;
 
-                    int newLionArrow = state.lionArrow;
+                    int newLionArrow = state.lionHitCnt;
                     int newLionScore = state.lionScore;
                     int newApeachScore = state.apeachScore;
-                    int[] newLionInfo = Arrays.copyOf(state.lionShots, state.lionShots.length);
+                    int[] newLionInfo = Arrays.copyOf(state.lionInfo, state.lionInfo.length);
 
-                    if(info[i] > 0 && state.lionArrow > info[i]) {  //라이언이 점수를 뺃는 경우
+                    if(info[i] > 0 && state.lionHitCnt > info[i]) {  //라이언이 점수를 뺏는 경우
                         newLionInfo[i] = info[i] + 1;
                         newLionArrow -= info[i] + 1;
                         newLionScore += 10 - i;
@@ -54,7 +52,7 @@ class Solution {
                         newLionArrow -= 1;
                         newLionScore += 10 - i;
                     } else{  //남은 화살 소모
-                        newLionInfo[i] = state.lionArrow;
+                        newLionInfo[i] = state.lionHitCnt;
                         newLionArrow = 0;
                     }
                     boolean[] newVisited = Arrays.copyOf(state.visited, state.visited.length);
@@ -64,31 +62,20 @@ class Solution {
         }
         return maxDiffScore == Integer.MIN_VALUE ? new int[]{-1} : answer;
     }
-    
+
     class State {
-        private int lionArrow;
+        private int lionHitCnt;
         private int lionScore;
         private int apeachScore;
-        private int[] lionShots;
+        private int[] lionInfo;
         private boolean[] visited;
 
-        public State(int lionArrow, int lionScore, int apeachScore, int[] lionShots, boolean[] visited) {
-            this.lionArrow = lionArrow;
+        public State(int lionHitCnt, int lionScore, int apeachScore, int[] lionInfo, boolean[] visited) {
+            this.lionHitCnt = lionHitCnt;
             this.lionScore = lionScore;
             this.apeachScore = apeachScore;
-            this.lionShots = lionShots;
+            this.lionInfo = lionInfo;
             this.visited = visited;
-        }
-
-        @Override
-        public String toString() {
-            return "State{" +
-                    "lionArrow=" + lionArrow +
-                    ", lionScore=" + lionScore +
-                    ", apeachScore=" + apeachScore +
-                    ", lionShots=" + Arrays.toString(lionShots) +
-                    ", visited=" + Arrays.toString(visited) +
-                    '}';
         }
     }
 }
